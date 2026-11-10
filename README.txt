@@ -1,1 +1,1 @@
-Nahrajte soubory z tohoto ZIPu do kořene větve main v GitHub repozitáři. Ponechte existující soubor CNAME. Fotografie jsou dočasné grafické výřezy z návrhu. Datum, propozice a registrační odkaz je třeba doplnit.
+Nahrajte obsah slozky do korene GitHub repozitare. Soubor CNAME na GitHubu ponechte. Video Full HD 1920x1080. Mobilni vzhled zachovan.
