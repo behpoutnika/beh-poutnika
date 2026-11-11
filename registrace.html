@@ -230,10 +230,23 @@ async function loadWaves(){try{const snap=await getDoc(doc(db,'settings','pricin
 let allowed=false,busy=false;
 const say=t=>message.textContent=t;
 document.addEventListener('bp-pricing-change',()=>{button.disabled=!allowed||busy||!window.__bpPricingReady});
-onAuthStateChanged(auth,u=>{
+onAuthStateChanged(auth,async u=>{
  allowed=!!u&&u.email==='behpoutnika@gmail.com'&&u.emailVerified;
- button.disabled=!allowed||busy;
- say(allowed?'Jste přihlášeni jako ověřený správce. Můžete uložit testovací přihlášku.':'Testování je dostupné pouze po přihlášení a ověření e-mailu správce v administraci (/admin).');
+ window.__bpSetAdminPreview(allowed);
+ button.disabled=true;
+ if(!allowed){
+   window.__bpPricingError();
+   say('Testování je dostupné pouze po přihlášení a ověření e-mailu správce v administraci (/admin).');
+   return;
+ }
+ say('Jste přihlášeni jako ověřený správce. Načítám ceník z Firebase…');
+ await loadWaves();
+ if(window.__bpPricingReady){
+   say('Ceník načten. Můžete uložit testovací přihlášku.');
+ } else if(document.getElementById('reg-message').textContent.startsWith('Jste přihlášeni')){
+   say('Ceník načten. Pro test vyberte cenovou vlnu.');
+ }
+ button.disabled=!allowed||busy||!window.__bpPricingReady;
 });
 button.addEventListener('click',async()=>{
  if(!allowed||busy||!window.__bpPricingReady){say('Ceník není načten nebo není aktivní cenová vlna.');return;}
