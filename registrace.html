@@ -265,9 +265,9 @@ onAuthStateChanged(auth,async u=>{
  say('Jste přihlášeni jako ověřený správce. Načítám ceník z Firebase…');
  await loadWaves();
  if(window.__bpPricingReady){
-   say('Ceník načten.');
+   say('');
  } else if(document.getElementById('reg-message').textContent.startsWith('Jste přihlášeni')){
-   say('Ceník načten. Pro test vyberte cenovou vlnu.');
+   say('');
  }
  refreshSubmit();
 });
