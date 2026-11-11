@@ -222,10 +222,21 @@ nav a[aria-current="page"]{color:#fff;border-bottom:2px solid #008000;padding-bo
 })();</script><script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {getAuth,onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
-import {getFirestore,collection,addDoc,serverTimestamp,doc,getDoc} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import {getFirestore,collection,addDoc,serverTimestamp,doc,getDoc,getDocs,setDoc} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 const cfg={apiKey:'AIzaSyDgp9a5BVvgYr_bSQNCy2MG-QN_5rYMpkA',authDomain:'beh-poutnika.firebaseapp.com',projectId:'beh-poutnika',appId:'1:587500643672:web:4e51bd9b481d985b96712d'};
 const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
 const button=document.getElementById('submit-test'),message=document.getElementById('reg-message');
+async function syncPublicStartlist(){
+ const snap=await getDocs(collection(db,'testOrders'));
+ const entries=[];
+ snap.forEach(order=>{const o=order.data();for(const p of (o.participants||[])){
+  if(!p.first||!p.last||!['deti','hlavni','canicross'].includes(p.race))continue;
+  entries.push({first:String(p.first).slice(0,100),last:String(p.last).slice(0,100),club:String(p.club||'').slice(0,120),race:p.race,category:String(p.category||'').slice(0,100),paid:o.paymentStatus==='paid'});
+ }});
+ if(entries.length>1000)throw Error('Startovka přesáhla limit 1000 závodníků pro jeden dokument.');
+ await setDoc(doc(db,'public','startlist'),{entries,updatedAt:serverTimestamp()});
+}
+
 async function loadWaves(){try{const snap=await getDoc(doc(db,'settings','pricing'));if(!snap.exists()||!Array.isArray(snap.data().waves)||snap.data().waves.length!==4)throw Error('Ceník ještě není nastaven v administraci.');const w=snap.data().waves;if(!w.every((v,i)=>['deti','hlavni','canicross'].every(k=>Number.isInteger(v[k])&&v[k]>=0)&&(i===3||/^\d{4}-\d{2}-\d{2}$/.test(v.from)&&/^\d{4}-\d{2}-\d{2}$/.test(v.to))))throw Error('Neplatné nastavení ceníku.');window.__bpSetWaves(w)}catch(e){window.__bpPricingError();say('Ceník nelze načíst: '+(e.message||e)+'. Zkontrolujte přihlášení správce a pravidla Firebase.')}}
 let allowed=false,busy=false;
 const say=t=>message.textContent=t;
@@ -284,7 +295,7 @@ button.addEventListener('click',async()=>{
  busy=true;button.disabled=true;say('Odesílám přihlášku…');
  try{
   const ref=await addDoc(collection(db,'testOrders'),{participants,pricing,contactEmail,contactPhone,paymentStatus:'unpaid',test:true,createdAt:serverTimestamp(),createdBy:auth.currentUser.uid});
-  say('Přihláška byla úspěšně uložena.');
+  try{await syncPublicStartlist();say('Přihláška byla úspěšně uložena.')}catch(syncError){say('Přihláška byla uložena, ale startovku se nepodařilo aktualizovat: '+(syncError.message||syncError))}
   window.__bpResetTestParticipants();emailField.value='';phoneField.value='';refreshSubmit();
  }catch(e){say('Uložení se nezdařilo: '+(e.message||e));}
  finally{busy=false;refreshSubmit();}
