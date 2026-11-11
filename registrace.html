@@ -229,11 +229,12 @@ const button=document.getElementById('submit-test'),message=document.getElementB
 async function loadWaves(){try{const snap=await getDoc(doc(db,'settings','pricing'));if(!snap.exists()||!Array.isArray(snap.data().waves)||snap.data().waves.length!==4)throw Error('Ceník ještě není nastaven v administraci.');const w=snap.data().waves;if(!w.every((v,i)=>['deti','hlavni','canicross'].every(k=>Number.isInteger(v[k])&&v[k]>=0)&&(i===3||/^\d{4}-\d{2}-\d{2}$/.test(v.from)&&/^\d{4}-\d{2}-\d{2}$/.test(v.to))))throw Error('Neplatné nastavení ceníku.');window.__bpSetWaves(w)}catch(e){window.__bpPricingError();say('Ceník nelze načíst: '+(e.message||e)+'. Zkontrolujte přihlášení správce a pravidla Firebase.')}}
 let allowed=false,busy=false;
 const say=t=>message.textContent=t;
+const isValidEmail=value=>{const v=value.trim();return v.length<=254&&/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(v)};
 function formReady(){
  const people=window.__bpGetTestParticipants();
  const email=document.getElementById('contact-email'),phone=document.getElementById('contact-phone');
  return people.length>0&&people.length<=20&&people.every(p=>p.first&&p.last&&p.birth&&window.__bpCategoryFor(p).valid)
-  &&email.checkValidity()&&email.value.trim()
+  &&isValidEmail(email.value)
   &&/^[+\d][\d\s().-]{6,24}$/.test(phone.value.trim())&&phone.value.replace(/\D/g,'').length>=9;
 }
 function refreshSubmit(){button.disabled=!allowed||busy||!window.__bpPricingReady||!formReady()}
@@ -241,7 +242,7 @@ document.addEventListener('bp-pricing-change',refreshSubmit);
 document.addEventListener('bp-form-change',refreshSubmit);
 function validateContactField(id,show){
  const el=document.getElementById(id),value=el.value.trim();
- const valid=id==='contact-email'?!!value&&el.checkValidity():/^[+\d][\d\s().-]{6,24}$/.test(value)&&value.replace(/\D/g,'').length>=9;
+ const valid=id==='contact-email'?isValidEmail(value):/^[+\d][\d\s().-]{6,24}$/.test(value)&&value.replace(/\D/g,'').length>=9;
  const err=document.getElementById(id==='contact-email'?'email-error':'phone-error');
  err.textContent=show&&!valid?(id==='contact-email'?(value?'Zadejte platnou e-mailovou adresu.':'E-mailová adresa je povinná.'):(value?'Zadejte platné telefonní číslo (alespoň 9 číslic).':'Telefonní číslo je povinné.')):'';
  el.classList.toggle('invalid',show&&!valid);el.setAttribute('aria-invalid',String(show&&!valid));
@@ -275,7 +276,7 @@ button.addEventListener('click',async()=>{
  const participants=window.__bpGetTestParticipants();
  const emailField=document.getElementById('contact-email'),phoneField=document.getElementById('contact-phone');
   const contactEmail=emailField.value.trim(),contactPhone=phoneField.value.trim();
-  if(!emailField.checkValidity()||!contactEmail){say('Vyplňte platnou e-mailovou adresu.');emailField.focus();return;}
+  if(!isValidEmail(contactEmail)){say('Vyplňte platnou e-mailovou adresu.');emailField.focus();return;}
   if(!/^[+\d][\d\s().-]{6,24}$/.test(contactPhone)||contactPhone.replace(/\D/g,'').length<9){say('Vyplňte platné telefonní číslo (alespoň 9 číslic).');phoneField.focus();return;}
   const pricing=window.__bpGetTestPricing();
  const valid=participants.length>0&&participants.length<=20&&participants.every(p=>p.first&&p.last&&p.birth&&p.birth<=new Date().toISOString().slice(0,10)&&['m','z'].includes(p.sex)&&['deti','hlavni','canicross'].includes(p.race)&&p.first.length<=80&&p.last.length<=80&&p.club.length<=120&&window.__bpCategoryFor(p).valid);
