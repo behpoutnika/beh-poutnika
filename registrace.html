@@ -289,7 +289,7 @@ button.addEventListener("click",async()=>{
   const result=await registerRunner({participants:participants.map(({first,last,birth,sex,club,race})=>({first,last,birth,sex,club,race})),contactEmail,contactPhone});
   const data=result.data;
   if(!data?.ok)throw new Error("Server nepotvrdil uložení přihlášky.");
-  say("Přihláška byla úspěšně uložena. Číslo registrace: "+data.registrationId+". Celkem: "+Number(data.total).toLocaleString("cs-CZ")+" Kč. Potvrzovací e-mail zatím neposíláme.");
+  say("Registrace byla úspěšně vytvořena.");
   window.__bpResetTestParticipants();emailField.value="";phoneField.value="";
  }catch(e){
   const code=String(e.code||"");
