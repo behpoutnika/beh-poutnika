@@ -238,9 +238,8 @@ function formReady(){
  const people=window.__bpGetTestParticipants();
  const email=document.getElementById("contact-email");
  const phone=document.getElementById("contact-phone");
- const consent=document.getElementById("race-consent");
  return people.length>0&&people.length<=20&&people.every(p=>p.first&&p.last&&p.birth&&window.__bpCategoryFor(p).valid)
-  &&isValidEmail(email.value)&&/^[+\d][\d\s().-]{6,24}$/.test(phone.value.trim())&&phone.value.replace(/\D/g,"").length>=9&&consent.checked;
+  &&isValidEmail(email.value)&&/^[+\d][\d\s().-]{6,24}$/.test(phone.value.trim())&&phone.value.replace(/\D/g,"").length>=9;
 }
 function refreshSubmit(){button.disabled=busy||!pricingReady||!window.__bpPricingReady||!formReady();}
 document.addEventListener("bp-pricing-change",refreshSubmit);
@@ -253,7 +252,6 @@ function validateContactField(id,show){
  el.classList.toggle("invalid",show&&!valid);el.setAttribute("aria-invalid",String(show&&!valid));
  return valid;
 }
-document.getElementById("race-consent").addEventListener("change",refreshSubmit);
 for(const id of ["contact-email","contact-phone"]){
  const el=document.getElementById(id);let touched=false;
  el.addEventListener("input",()=>{validateContactField(id,touched);refreshSubmit();});
