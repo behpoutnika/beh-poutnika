@@ -145,6 +145,11 @@ header.scrolled,header.menu-open{background:rgba(0,34,85,.97)}
 @media(max-width:500px){.footer-profile{height:75px}}
 
 footer{background:#002255}
+
+/* OPRAVA: viditelne, ale jemne vrstevnice z mapy Bisiku */
+footer::before{background-image:url('topografie-bisik-linie.png')!important;background-size:cover!important;background-position:center center!important;opacity:1!important;mix-blend-mode:screen;z-index:0!important}
+footer .footer-contours{display:none!important}
+footer>.wrap{position:relative;z-index:2}
 </style><style>
 /* Samostatné stránky a sjednocená navigace */
 nav a[aria-current="page"]{color:#fff;border-bottom:2px solid #217821;padding-bottom:4px}

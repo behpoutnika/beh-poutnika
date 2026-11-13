@@ -49,6 +49,11 @@ body.map-fullscreen-locked{overflow:hidden!important}
 /* Jednotna typografie Exo 2 pro cely web */
 body{font-family:'Exo 2',system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
 button,input,select,textarea{font-family:inherit}
+
+/* OPRAVA: viditelne, ale jemne vrstevnice z mapy Bisiku */
+footer::before{background-image:url('topografie-bisik-linie.png')!important;background-size:cover!important;background-position:center center!important;opacity:1!important;mix-blend-mode:screen;z-index:0!important}
+footer .footer-contours{display:none!important}
+footer>.wrap{position:relative;z-index:2}
 </style><style>
 /* Jemny topograficky podklad podle dodane mapy Jiraskovych skal – sjednoceno napric webem */
 footer{position:relative!important;isolation:isolate;overflow:hidden;background:#002255!important}
