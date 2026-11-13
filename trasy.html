@@ -56,7 +56,7 @@ svg.innerHTML=grid+`<path class="prof-fill" d="${profilePath} L978 214 L58 214 Z
 // Fotografie přidávejte do složky fotky-trasy na GitHubu a vyplňte údaje níže.
 // Přidejte fotografie do složky fotky-trasy v GitHubu. GPS musí odpovídat skutečnému místu.
 // Příklad zápisu do pole photoPoints: {name:'Vyhlídka',lng:16.12,lat:50.58,image:'fotky-trasy/vyhlidka.jpg',description:'Pohled do údolí'}
-const photoPoints=[];
+const photoPoints=[{"name":"Prostor startu","lng":16.138539,"lat":50.57248,"image":"fotky-trasy/start.jpg","description":"Start závodu · 0,00 km"},{"name":"Broumovské stěny","lng":16.130616,"lat":50.586502,"image":"fotky-trasy/broumovske-steny.jpg","description":"Pohled na skalní stěny · 6,30 km"},{"name":"Rozhledna Čáp","lng":16.124167,"lat":50.574711,"image":"fotky-trasy/rozhledna-cap.jpg","description":"Nejvyšší bod trasy · 7.88 km · 780 m n. m."}];
 // Na mobilu zobrazujeme zmenšený profil přímo přes spodní část mapy.
 let viewMode='3d';
 let map=null,marker=null,raf=null,flightStart=0,flightElapsed=0,flightDuration=90000,playing=false,ready=false;
