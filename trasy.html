@@ -56,6 +56,8 @@
 
 /* Roztažení mapy přes celý displej bez zásahu do průletu. */
 .map-fullscreen-toggle{position:absolute;top:12px;left:12px;z-index:8;display:flex;align-items:center;gap:6px;padding:10px 13px;border:1px solid #cbd9cd;border-radius:11px;background:#fff;color:#002255;font:750 13px system-ui,Arial,sans-serif;box-shadow:0 3px 12px #0003;cursor:pointer}
+.map.flying:fullscreen::after{content:"Přiblížení: roztáhněte nebo stáhněte dva prsty";position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:7;background:#002255d9;color:white;padding:8px 12px;border-radius:20px;font:600 12px system-ui;pointer-events:none;white-space:nowrap;max-width:90%;box-sizing:border-box;text-align:center}
+.map.flying.map-fullscreen-fallback::after{content:"Přiblížení: roztáhněte nebo stáhněte dva prsty";position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:7;background:#002255d9;color:white;padding:8px 12px;border-radius:20px;font:600 12px system-ui;pointer-events:none;white-space:nowrap;max-width:90%;box-sizing:border-box;text-align:center}
 .map-fullscreen-toggle:focus-visible{outline:3px solid #f28a20;outline-offset:2px}
 .map:fullscreen,.map.map-fullscreen-fallback{width:100vw!important;height:100dvh!important;max-height:none!important;min-height:0!important;border-radius:0!important;background:#e5ebe5}
 .map.map-fullscreen-fallback{position:fixed!important;inset:0!important;z-index:99999!important}
@@ -90,6 +92,37 @@ function setFlightZoom(value){
 $('flightzoom').addEventListener('input',e=>setFlightZoom(e.target.value));
 $('zoomin').addEventListener('click',()=>setFlightZoom(flightZoom+0.3));
 $('zoomout').addEventListener('click',()=>setFlightZoom(flightZoom-0.3));
+// Na mobilu lze i při průletu přibližovat dvěma prsty, včetně režimu celé obrazovky.
+// Vzdálenost prstů ovládá flightZoom, který jinak animace průletu každým snímkem nastavuje zpět.
+let flightPinchDistance=null;
+function pinchDistance(touches){
+  const dx=touches[0].clientX-touches[1].clientX;
+  const dy=touches[0].clientY-touches[1].clientY;
+  return Math.hypot(dx,dy);
+}
+const flightMapElement=$('map');
+flightMapElement.addEventListener('touchstart',e=>{
+  if(!playing||e.touches.length!==2){flightPinchDistance=null;return;}
+  flightPinchDistance=pinchDistance(e.touches);
+  e.preventDefault();
+  e.stopImmediatePropagation();
+},{capture:true,passive:false});
+flightMapElement.addEventListener('touchmove',e=>{
+  if(!playing||e.touches.length!==2){flightPinchDistance=null;return;}
+  const next=pinchDistance(e.touches);
+  if(flightPinchDistance&&next>0){
+    // Logaritmický poměr odpovídá obvyklému chování map při pinch-to-zoom.
+    setFlightZoom(flightZoom+Math.log2(next/flightPinchDistance)*1.8);
+  }
+  flightPinchDistance=next;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+},{capture:true,passive:false});
+flightMapElement.addEventListener('touchend',e=>{
+  if(e.touches.length<2)flightPinchDistance=null;
+  if(playing&&e.changedTouches.length){e.preventDefault();e.stopImmediatePropagation();}
+},{capture:true,passive:false});
+flightMapElement.addEventListener('touchcancel',()=>{flightPinchDistance=null;},{capture:true});
 // Při běžícím průletu kolečko myši mění přiblížení, ne polohu kamery.
 $('map').addEventListener('wheel',e=>{
   if(!playing)return;
