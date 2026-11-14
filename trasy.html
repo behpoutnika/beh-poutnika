@@ -452,6 +452,10 @@ function setView(mode){
   const is3d=mode==='3d';
   map.setTerrain(is3d?{source:'terrain',exaggeration:Number($('relief').value)}:null);
   map.easeTo({pitch:is3d?55:0,bearing:is3d?-25:0,duration:850});
+   // Obnova rasterových dlaždic po přechodu mezi 2D a 3D.
+   requestAnimationFrame(()=>{map.resize();map.triggerRepaint();});
+   map.once('moveend',()=>{map.resize();map.triggerRepaint();});
+
   $('view2d').classList.toggle('active',!is3d);$('view3d').classList.toggle('active',is3d);
   $('view2d').setAttribute('aria-pressed',String(!is3d));$('view3d').setAttribute('aria-pressed',String(is3d));
   $('relief').disabled=!is3d;
@@ -542,7 +546,7 @@ map.on('error',e=>{if(!ready)$('status').textContent='Mapové podklady se nepoda
     }else{
       mapPanel.append(actions,helpDesktop,helpMobile);
     }
-    if(window.routeMap&&typeof window.routeMap.resize==='function')window.routeMap.resize();
+    if(window.kidsRouteMap&&typeof window.kidsRouteMap.resize==='function')window.kidsRouteMap.resize();
   }
   arrange();
   if(mq.addEventListener)mq.addEventListener('change',arrange);else mq.addListener(arrange);
@@ -559,9 +563,9 @@ map.on('error',e=>{if(!ready)$('status').textContent='Mapové podklady se nepoda
     button.setAttribute('aria-label',on?'Zavřít zobrazení mapy na celou obrazovku':'Zobrazit mapu na celou obrazovku');
     button.setAttribute('aria-pressed',String(on));
     document.body.classList.toggle('map-fullscreen-locked',on);
-    if(window.routeMap&&typeof window.routeMap.resize==='function'){
-      window.routeMap.resize();
-      requestAnimationFrame(()=>window.routeMap.resize());
+    if(window.kidsRouteMap&&typeof window.kidsRouteMap.resize==='function'){
+      window.kidsRouteMap.resize();
+      requestAnimationFrame(()=>window.kidsRouteMap.resize());
     }
   }
   function closeFallback(){fallback=false;area.classList.remove('map-fullscreen-fallback');refresh()}
