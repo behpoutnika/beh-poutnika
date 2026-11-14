@@ -448,18 +448,26 @@ svg.addEventListener('pointermove',e=>{
 function stop(){if(raf)cancelAnimationFrame(raf);raf=null;playing=false;$('map').classList.remove('flying');lastFrameTime=0;$('fly').textContent='▶ Spustit 3D průlet'}
 function setView(mode){
   if(!map)return;
-  stop();flightElapsed=0;viewMode=mode;
+  stop();flightElapsed=0;
   const is3d=mode==='3d';
-  map.setTerrain(is3d?{source:'terrain',exaggeration:Number($('relief').value)}:null);
-  map.easeTo({pitch:is3d?55:0,bearing:is3d?-25:0,duration:850});
-   // Obnova rasterových dlaždic po přechodu mezi 2D a 3D.
-   requestAnimationFrame(()=>{map.resize();map.triggerRepaint();});
-   map.once('moveend',()=>{map.resize();map.triggerRepaint();});
-
-  $('view2d').classList.toggle('active',!is3d);$('view3d').classList.toggle('active',is3d);
-  $('view2d').setAttribute('aria-pressed',String(!is3d));$('view3d').setAttribute('aria-pressed',String(is3d));
+  // Žádné resize během animace kamery: při 3D terénu může
+  // MapLibre 4.7.1 skončit chybou "failed to invert matrix".
+  map.stop();
+  // Nejprve nastavíme bezpečný plochý pohled.
+  map.setTerrain(null);
+  map.jumpTo({pitch:0,bearing:0});
+  viewMode=mode;
+  if(is3d){
+    map.setTerrain({source:'terrain',exaggeration:Number($('relief').value)});
+    map.jumpTo({pitch:55,bearing:-25});
+  }
+  $('view2d').classList.toggle('active',!is3d);
+  $('view3d').classList.toggle('active',is3d);
+  $('view2d').setAttribute('aria-pressed',String(!is3d));
+  $('view3d').setAttribute('aria-pressed',String(is3d));
   $('relief').disabled=!is3d;
   $('status').textContent=is3d?'3D terén zapnut':'2D mapa zapnuta';
+  map.triggerRepaint();
 }
 $('turnleft').addEventListener('click',()=>{if(map){stop();map.easeTo({bearing:map.getBearing()-30,duration:450})}});
 $('turnright').addEventListener('click',()=>{if(map){stop();map.easeTo({bearing:map.getBearing()+30,duration:450})}});
