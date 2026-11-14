@@ -436,7 +436,15 @@ function initFlightCamera(d){
 }
 
 function point(i,moveMarker=true){i=Math.max(0,Math.min(coordinates.length-1,i));let x=sx(i),y=sy(i);$('pcursor').setAttribute('x1',x);$('pcursor').setAttribute('x2',x);$('pcursor').setAttribute('visibility','visible');$('pdot').setAttribute('cx',x);$('pdot').setAttribute('cy',y);$('pdot').setAttribute('visibility','visible');$('pointinfo').textContent=distances[i].toFixed(2).replace('.',',')+' km · '+Math.round(elevations[i])+' m n. m.';if(marker&&moveMarker)marker.setLngLat(coordinates[i]);}
-svg.addEventListener('pointermove',e=>{let rect=svg.getBoundingClientRect(),x=(e.clientX-rect.left)/rect.width*1000;point(nearestIndex(Math.max(0,Math.min(total,(x-58)/920*total))),!playing)});
+svg.addEventListener('pointermove',e=>{
+  // Převod z obrazovkových pixelů do skutečných SVG souřadnic.
+  // Respektuje automatické centrování a poměr stran SVG.
+  const matrix=svg.getScreenCTM();
+  if(!matrix)return;
+  const pt=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
+  const distance=Math.max(0,Math.min(total,(pt.x-58)/920*total));
+  point(nearestIndex(distance),!playing);
+});
 function stop(){if(raf)cancelAnimationFrame(raf);raf=null;playing=false;$('map').classList.remove('flying');lastFrameTime=0;$('fly').textContent='▶ Spustit 3D průlet'}
 function setView(mode){
   if(!map)return;
